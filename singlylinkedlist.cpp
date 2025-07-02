@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <cmath>
 
+#include "json.hpp"
+
 using namespace std;
 using namespace std::chrono;
 
@@ -42,6 +44,8 @@ struct node * del_first(struct node * head);
 void del_last(struct node * head);
 void print_list(struct node * head);
 void print_performance_metrics(const string& algo_name, double execution_time_ms, size_t memory_used_bytes);
+nlohmann::json transactionToJson(const Transaction& t);
+std::string generateJsonFromLinkedList(struct node* head);
 
 double safe_stod(const string& s, double defaultValue = 0.0);
 float safe_stof(const string& s, float defaultValue = 0.0f);
@@ -64,7 +68,8 @@ int main(){
     struct node * head_wireTransfer= NULL;
     struct node * head_ach= NULL;
     struct node * head_card= NULL;
-   
+    struct node * head = NULL;
+
     //to open the csv
     ifstream iFile;
     iFile.open("C:\\Users\\DreamDreams\\Documents\\University\\C++\\Assignment\\Assignment_pt1\\financial_fraud_detection_dataset.csv");
@@ -188,23 +193,49 @@ int main(){
     // cout << "pr: " << pr_r << endl;
 }
 
+cout << "Transactions Loaded." << endl;
 //to search
 string trans_id = "T108863";
 string trans_type_to_search = "payment";
 string trans_location = "Berlin";
 
 char option = ' ';
-while(option != '5'){
-cout << "Choose the operation you would like see the metrics of\n1. Merge Sort and Linear Search\n2. Merge Sort and Block Search\n3. Selection Sort and Linear Search\n4. Selection Sort and Block Search\n\n5. Exit\nEnter number (1-5): ";
-cin >> option;
+while(true){
+    while(true){
+        cout << "Which payment channel do you want to analyse?\n1. Card\n2. UPI\n3. ACH\n4. Wire Transfer\nEnter (1-4): ";
+        cin >> option;
+        if(option == '1'){
+        head = head_card;
+            break;
+        }
+        else if(option == '2'){
+            head = head_UPI;
+            break;
+        }
+        else if(option == '3'){
+            head = head_ach;
+            break;
+        }
+        else if(option == '4'){
+            head = head_wireTransfer;
+            break;
+        }
+        else{
+
+            cout << "Please enter valid input (1-4): ";
+            cin >> option;
+        }
+    }
+    cout << "Choose the operation you would like see the metrics of\n1. Merge Sort and Linear Search\n2. Merge Sort and Block Search\n3. Selection Sort and Linear Search\n4. Selection Sort and Block Search\n5. Generate JSON Output file\n6. Exit\nEnter number (1-5): ";
+    cin >> option;
 
     if(option == '1'){
         //start timer
         auto start_time = high_resolution_clock::now();
         //sorting
-            head_card = mergesort(head_card);
+            head = mergesort(head);
         //searching
-            linked_list_linear_search(head_card, trans_id, trans_location, trans_type_to_search);
+            linked_list_linear_search(head, trans_id, trans_location, trans_type_to_search);
 
         //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -216,7 +247,7 @@ cin >> option;
 
         // 2. Calculate the memory usage
         // This requires a function to count the nodes in your list
-            size_t list_size = size_of_linked_list(head_card);
+            size_t list_size = size_of_linked_list(head);
         // We multiply the number of nodes by the size of one node struct
             size_t memory_used_bytes = list_size * sizeof(struct node); // This is an approximate value
             print_performance_metrics("Linear Search", execution_time_ms, memory_used_bytes);
@@ -226,9 +257,9 @@ cin >> option;
         //start timer
         auto start_time = high_resolution_clock::now();
         //sorting
-            head_card = mergesort(head_card);
+            head = mergesort(head);
         //searching
-            linked_list_linear_search(head_card, trans_id, trans_location, trans_type_to_search);
+            linked_list_linear_search(head, trans_id, trans_location, trans_type_to_search);
 
         //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -240,10 +271,10 @@ cin >> option;
 
         // 2. Calculate the memory usage
         // This requires a function to count the nodes in your list
-            size_t list_size = size_of_linked_list(head_card);
+            size_t list_size = size_of_linked_list(head);
         // We multiply the number of nodes by the size of one node struct
             size_t memory_used_bytes = list_size * sizeof(struct node); // This is an approximate value
-        // print_list(head_card);
+        // print_list(head);
 
             print_performance_metrics("Linear Search", execution_time_ms, memory_used_bytes);
             
@@ -252,9 +283,9 @@ cin >> option;
         //start timer
         auto start_time = high_resolution_clock::now();
         //sorting
-            head_card = selection_sort(head_card);
+            head = selection_sort(head);
         //searching
-            linked_list_linear_search(head_card, trans_id, trans_location, trans_type_to_search);
+            linked_list_linear_search(head, trans_id, trans_location, trans_type_to_search);
 
             //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -266,7 +297,7 @@ cin >> option;
 
         // 2. Calculate the memory usage
         // This requires a function to count the nodes in your list
-            size_t list_size = size_of_linked_list(head_card);
+            size_t list_size = size_of_linked_list(head);
         // We multiply the number of nodes by the size of one node struct
             size_t memory_used_bytes = list_size * sizeof(struct node); // This is an approximate value
 
@@ -278,9 +309,9 @@ cin >> option;
         //start timer
         auto start_time = high_resolution_clock::now();
         //sorting
-            head_card = selection_sort(head_card);
+            head = selection_sort(head);
         //searching
-            linked_list_block_search(head_card,trans_location, trans_id, trans_type_to_search);
+            linked_list_block_search(head,trans_location, trans_id, trans_type_to_search);
 
         //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -292,11 +323,29 @@ cin >> option;
 
         // 2. Calculate the memory usage
         // This requires a function to count the nodes in your list
-            size_t list_size = size_of_linked_list(head_card);
+            size_t list_size = size_of_linked_list(head);
         // We multiply the number of nodes by the size of one node struct
             size_t memory_used_bytes = list_size * sizeof(struct node); // This is an approximate value
             print_performance_metrics("Linear Search", execution_time_ms, memory_used_bytes);
     }else if(option == '5'){
+     if (head == nullptr) { // Check if data is loaded
+            cout << "Please load data first (Option 1).\n";
+            break;
+        }
+        string json_output = generateJsonFromLinkedList(head);
+        cout << "\n--- Generated JSON Output ---\n";
+        
+
+        ofstream outFile("transactions.json");
+        if (outFile.is_open()) {
+            outFile << json_output;
+            outFile.close();
+            cout << "JSON data successfully saved to transactions.json\n";
+        } else {
+            cerr << "Error: Unable to open file for JSON export.\n";
+    }   
+        
+    }else if(option == '6'){
         cout << "Thank you." << endl;
         break;
         
@@ -306,13 +355,58 @@ cin >> option;
 }
 
 
+
+
+
     cout << "\nRows inspected: " << pr_r << endl;
-    int size_of_ll = size_of_linked_list(head_card);
+    int size_of_ll = size_of_linked_list(head);
     cout << "Size of head: "  << size_of_ll;
     return 0;
 }
 // ------------------------------------------------------
 
+std::string generateJsonFromLinkedList(struct node* head) {
+    nlohmann::json root_obj; // This will be the root JSON object
+    nlohmann::json transactions_array = nlohmann::json::array(); // This will hold all your transaction objects
+
+    struct node* ptr = head;
+    while (ptr != nullptr) {
+        // Convert the current node's Transaction data to a JSON object
+        nlohmann::json transaction_json = transactionToJson(ptr->data);
+        // Add this JSON object to our array
+        transactions_array.push_back(transaction_json);
+        ptr = ptr->next;
+    }
+
+    // Put the array of transactions into the root object under a key, e.g., "all_transactions"
+    root_obj["all_transactions"] = transactions_array;
+
+    // Return the JSON as a pretty-printed string (4 spaces indent)
+    return root_obj.dump(4);
+}
+
+nlohmann::json transactionToJson(const Transaction& t) {
+    nlohmann::json j;
+    j["transaction_id"] = t.transaction_id;
+    j["timestamp"] = t.timestamp;
+    j["sender_account"] = t.sender_account;
+    j["receiver_account"] = t.receiver_account;
+    j["amount"] = t.amount;
+    j["transaction_type"] = t.transaction_type;
+    j["merchant_category"] = t.merchant_category;
+    j["location"] = t.location;
+    j["device_used"] = t.device_used;
+    j["is_fraud"] = t.is_fraud; // This will now correctly convert your bool to true/false
+    j["fraud_type"] = t.fraud_type;
+    j["time_since_last_transaction"] = t.time_since_last_transaction;
+    j["spending_deviation_score"] = t.spending_deviation_score;
+    j["velocity_score"] = t.velocity_score;
+    j["geo_anomaly_score"] = t.geo_anomaly_score;
+    j["payment_channel"] = t.payment_channel;
+    j["ip_address"] = t.ip_address;
+    j["device_hash"] = t.device_hash;
+    return j;
+}
 
 void linked_list_block_search(struct node * head,const string &trans_location, const string &trans_id, const string &transaction_type_to_find){
     
