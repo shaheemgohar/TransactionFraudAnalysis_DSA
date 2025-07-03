@@ -62,7 +62,7 @@ struct node * selection_sort(struct node * head);
 
 //searches
 void linked_list_linear_search(struct node * head,const string &trans_id, const string &trans_location, const string &transaction_type_to_find);
-void linked_list_block_search(struct node * head, const string& trans_location, const string& trans_id, const string& transaction_type_to_find);
+void linked_list_block_search(struct node * head, const string &trans_location, const string &trans_id, const string &transaction_type_to_find);
 
 
 int main(){
@@ -264,7 +264,7 @@ while(true){
         //sorting
             current_channel_head = mergesort(current_channel_head);
         //searching
-            linked_list_block_search(current_channel_head, trans_id, trans_location, trans_type_to_search);
+            linked_list_linear_search(current_channel_head, trans_id, trans_location, trans_type_to_search);
 
         //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -316,7 +316,7 @@ while(true){
         //sorting
             current_channel_head = selection_sort(current_channel_head);
         //searching
-            linked_list_block_search(current_channel_head, trans_id, trans_location, trans_type_to_search);
+            linked_list_block_search(current_channel_head,trans_location, trans_id, trans_type_to_search);
 
         //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -360,6 +360,10 @@ while(true){
     free_list(current_channel_head); 
 
 }
+
+
+
+
     
     cout << "\nRows inspected: " << pr_r << endl;
     // int size_of_ll = size_of_linked_list(current_channel_head);
@@ -449,6 +453,61 @@ nlohmann::json transactionToJson(const Transaction& t) {
     j["device_hash"] = t.device_hash;
     return j;
 }
+void linked_list_block_search(struct node * head,const string &trans_location, const string &trans_id, const string &transaction_type_to_find){
+
+// int jump_distance = sqrt(size_of_linked_list(head));
+    
+    cout << "\n--- Searching for the following transaction details \nTransaction ID: " << trans_id << "\nLocation: " << trans_location << "\nTransaction Type: " << transaction_type_to_find << "\n ---\n" << endl;
+    struct node * current = head;
+    struct node * prev = current;
+    int i  = 0;
+    //jumping loop
+    while (current != NULL && current -> data.location < trans_location){
+        current = current -> next;
+    }
+    if(current -> data.location == trans_location){
+        i++;
+        prev = current;   
+    }
+
+//traverseing the blocks
+    bool found = false;
+    if(prev != NULL){
+        while(prev -> data.location == trans_location ) {     
+            
+            if(prev -> data.location == trans_location && prev -> data.transaction_type == transaction_type_to_find && prev -> data.transaction_id == trans_id){
+                found = true;
+                cout << "Transaction " << i << endl; 
+                cout << "  ID: " << prev ->data.transaction_id << endl;
+                cout << "  Timestamp: " << prev -> data.timestamp << endl;
+                cout << "  Sender: " << prev -> data.sender_account << endl;
+                cout << "  Receiver: " << prev -> data.receiver_account << endl;
+                cout << "  Amount: " << prev -> data.amount << endl;
+                cout << "  Type: " << prev -> data.transaction_type << endl;
+                cout << "  Merchant Category: " << prev -> data.merchant_category << endl;
+                cout << "  Location: " << prev -> data.location << endl;
+                cout << "  Device Used: " << prev -> data.device_used << endl;
+                cout << "  Is Fraud: " << prev -> data.is_fraud << endl;
+                cout << "  Fraud Type: " << prev -> data.fraud_type << endl;
+                cout << "  Time Since Last Transaction: " << prev->data.time_since_last_transaction << endl;
+                cout << "  Spending Deviation Score: " << prev -> data.spending_deviation_score << endl;
+                cout << "  Velocity Score: " << prev -> data.velocity_score << endl;
+                cout << "  Geo Anomaly Score: " << prev -> data.geo_anomaly_score << endl;
+                cout << "  Payment Channel: " << prev -> data.payment_channel << endl;
+                cout << "  IP Address: " << prev -> data.ip_address << endl;
+                cout << "  Device Hash: " << prev -> data.device_hash << "\n\n"; 
+            }
+            
+            prev = prev -> next;
+            if(prev == NULL) break;
+        }
+    }
+    
+    if (found == false) {
+        cout << "No transactions of type '" << transaction_type_to_find << "' were found." << endl;
+    }
+    cout << "--- Search complete. " << " ---" << endl;
+}
 
 struct node* selection_sort(struct node* head) {
     // The main traversal pointer for the outer loop
@@ -536,9 +595,8 @@ int size_of_linked_list(struct node * head){
     int count = 0;
     struct node * ptr = head;
     while ( ptr != NULL){
-        count++;
         ptr = ptr -> next;
-    }
+        count++;}
     return count;
 }
 
@@ -702,61 +760,6 @@ void linked_list_linear_search(struct node * head,const string &trans_id, const 
     }
     
     
-    if (found_count == 0) {
-        cout << "No transactions of type '" << transaction_type_to_find << "' were found." << endl;
-    }
-    cout << "--- Search complete. Found " << found_count << " transaction(s). ---" << endl;
-}
-
-void linked_list_block_search(struct node * head, const string &trans_id, const string& trans_location, const string& transaction_type_to_find){
-    cout << "\n--- Searching for the following transaction details \nTransaction ID: " << trans_id << "\nLocation: " << trans_location << "\nTransaction Type: " << transaction_type_to_find << "\n ---\n" << endl;
-
-    if (head == NULL) {
-        cout << "No transactions of type '" << transaction_type_to_find << "' were found." << endl;
-        cout << "--- Search complete. Found 0 transaction(s). ---" << endl;
-        return;
-    }
-
-    int n = size_of_linked_list(head);
-    
-    if (n == 0) {
-        cout << "No transactions of type '" << transaction_type_to_find << "' were found." << endl;
-        cout << "--- Search complete. Found 0 transaction(s). ---" << endl;
-        return;
-    }
-
-    int jump_distance = sqrt(n);
-
-    struct node * prev = head;
-    struct node * current = head;
-
-    while (current != NULL && current->data.location < trans_location) {
-        prev = current;
-
-        for (int i = 0; current != NULL && i < jump_distance; ++i) {
-            current = current->next;
-        }
-    }
-
-    current = prev;
-
-    int found_count = 0;
-    int transaction_display_index = 1;
-
-    while (current != NULL && current->data.location <= trans_location) {
-        if (current->data.location == trans_location) {
-            if (current->data.transaction_type == transaction_type_to_find && current->data.transaction_id == trans_id) {
-                found_count++;
-                cout << "Transaction " << transaction_display_index++ << endl;
-                // Call your print_node function here
-                print_node(current);
-            }
-        } else {
-            break;
-        }
-        current = current->next;
-    }
-
     if (found_count == 0) {
         cout << "No transactions of type '" << transaction_type_to_find << "' were found." << endl;
     }
