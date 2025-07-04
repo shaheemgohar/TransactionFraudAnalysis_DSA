@@ -62,8 +62,8 @@ struct node * selection_sort(struct node * head);
 
 //searches
 void linked_list_linear_search(struct node * head,const string &trans_id, const string &trans_location, const string &transaction_type_to_find);
-void linked_list_block_search(struct node * head, const string& trans_location, const string& trans_id, const string& transaction_type_to_find);
-
+void linked_list_block_search(struct node * head, const string &trans_id, const string& trans_location, const string& transaction_type_to_find);
+void linked_list_binary_search(struct node * head, const string & trans_id, const string& translocation, const string &transaction_type_to_find);
 
 int main(){
     
