@@ -62,8 +62,8 @@ struct node * selection_sort(struct node * head);
 
 //searches
 void linked_list_linear_search(struct node * head,const string &trans_id, const string &trans_location, const string &transaction_type_to_find);
-void linked_list_block_search(struct node * head, const string &trans_id, const string& trans_location, const string& transaction_type_to_find);
-void linked_list_binary_search(struct node * head, const string & trans_id, const string& translocation, const string &transaction_type_to_find);
+void linked_list_jump_search(struct node * head, const string &trans_id, const string& trans_location, const string& transaction_type_to_find);
+
 
 int main(){
     
@@ -85,7 +85,7 @@ int main(){
     string line = "";
     int pr_r = 0;
 //to form the linked list
-    while(getline(iFile, line) && pr_r < 50000){
+    while(getline(iFile, line) && pr_r < 100000){
         Transaction currentTransaction;
         string tempString;
         stringstream ss(line);
@@ -264,7 +264,7 @@ while(true){
         //sorting
             current_channel_head = mergesort(current_channel_head);
         //searching
-            linked_list_block_search(current_channel_head, trans_id, trans_location, trans_type_to_search);
+            linked_list_jump_search(current_channel_head, trans_id, trans_location, trans_type_to_search);
 
         //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -316,7 +316,7 @@ while(true){
         //sorting
             current_channel_head = selection_sort(current_channel_head);
         //searching
-            linked_list_block_search(current_channel_head, trans_id, trans_location, trans_type_to_search);
+            linked_list_jump_search(current_channel_head, trans_id, trans_location, trans_type_to_search);
 
         //stop timer    
             auto end_time = high_resolution_clock::now();
@@ -708,7 +708,7 @@ void linked_list_linear_search(struct node * head,const string &trans_id, const 
     cout << "--- Search complete. Found " << found_count << " transaction(s). ---" << endl;
 }
 
-void linked_list_block_search(struct node * head, const string &trans_id, const string& trans_location, const string& transaction_type_to_find){
+void linked_list_jump_search(struct node * head, const string &trans_id, const string& trans_location, const string& transaction_type_to_find){
     cout << "\n--- Searching for the following transaction details \nTransaction ID: " << trans_id << "\nLocation: " << trans_location << "\nTransaction Type: " << transaction_type_to_find << "\n ---\n" << endl;
 
     if (head == NULL) {
@@ -772,3 +772,4 @@ void print_performance_metrics(const string& algo_name, double execution_time_ms
     cout << left << setw(30) << "Memory Usage (KB):" << right << setw(15) << fixed << setprecision(2) << (double)memory_used_bytes / 1024.0 << endl;
     cout << "---------------------------------------------------\n" << endl;
 }
+
